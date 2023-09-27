@@ -2,8 +2,11 @@ from nltk import *
 import copy
 import itertools
 
+st_phrs = ["NP"] """NP - noun phrases"""
+st_conj = [",", "CC"] """CC and , - conjunctives"""
 
-def get_permutable_phrs(i_tree, path = [], phrs = ["NP"], conj = [",", "CC"]):
+def get_permutable_phrs(i_tree, path = [], phrs = st_phrs, conj = st_conj):
+    """To find all st_phrs divided by st_conj(one or two) which have common parent"""
     result = []
     for i in range(len(i_tree)):
         if type(i_tree[i]) == Tree:
@@ -33,6 +36,9 @@ def get_permutable_phrs(i_tree, path = [], phrs = ["NP"], conj = [",", "CC"]):
     return result  
                     
 def get_permutations(input_tree, permutable_phrs, limit = 20):
+    """To create all possible variants of paraphrasing initial three, where
+        permutable_phrs - all nodes that can be swapped, limit - maximum amount of permutations
+        """
     variants_of_permutation = []
     res = []
     for i in range(len(permutable_phrs)):
@@ -59,9 +65,11 @@ def get_permutations(input_tree, permutable_phrs, limit = 20):
     
 
 def get_paraphrases(input_tree, limit = 20, adjust = True):
-    i_tree = Tree.fromstring(input_tree)
-    permutable = get_permutable_phrs(i_tree)
-    phrs = get_permutations(i_tree, permutable, limit)
+    """Function to find all possible paraphrases of input tree and to create
+        result"""
+    i_tree = Tree.fromstring(input_tree) #to convert initial string to a syntax tree
+    permutable = get_permutable_phrs(i_tree) #to get all paths to nodes that can be swapped
+    phrs = get_permutations(i_tree, permutable, limit) #to get all posslble permutations, using found paths
     if(adjust == True):
         for i in range(len(phrs)):
             phrs[i] = str(phrs[i])
@@ -70,11 +78,12 @@ def get_paraphrases(input_tree, limit = 20, adjust = True):
         phrs = {"paraphrases" : phrs}
     return phrs
     
-
-
-if(__name__ == "__main__"):
+def test():
     s = "(S (NP (NP (DT The) (JJ charming) (NNP Gothic) (NNP Quarter) ) (, ,) (CC or) (NP (NNP Barri) (NNP Gòtic) ) ) (, ,) (VP (VBZ has) (NP (NP (JJ narrow) (JJ medieval) (NNS streets) ) (VP (VBN filled) (PP (IN with) (NP (NP (JJ trendy) (NNS bars) ) (, ,) (NP (NNS clubs) ) (CC and) (NP (JJ Catalan) (NNS restaurants) ) ) ) ) ) ) )"
     paraphrases = get_paraphrases(s)
     import json
     with open('data.json', 'w') as f:
         json.dump(paraphrases, f)
+    print("There are %i variants of this sentence, excluding initial one" % len(paraphrases["paraphrases" ]))
+if(__name__ == "__main__"):
+    test()
